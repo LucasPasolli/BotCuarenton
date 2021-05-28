@@ -1,16 +1,26 @@
-//node app.js
-console.log("RadioCheck")
+console.log("Corriendo en terminal")
 
-//const { channel } = require('diagnostic_channel');
-var Discord = require('discord.js'); 
-var bot = new Discord.Client();
-var botID = '847094877715300422';
+const Discord = require('discord.js');
+//const { userInfo } = require('os');
+const newUsers = new Discord.Collection();
+const fs = require('fs');
+const userData = JSON.parse(fs.readFileSync('storage/userData.json', 'utf8'));
+const bot = new Discord.Client();
+const botID = '847094877715300422';
+
+function userInfo(user) {
+    let finalString = '';
+
+    finalString += '**' + user.username + '**, con la ID: **' + user.id + '**'; 
+
+    return finalString;
+}
 
 //Avisa cuando prende el bot
 bot.on('ready', () => {
-    console.log('Now Online...')
+    console.log('Correindo en servidor')
+    bot.user.setActivity("43 Lover", {type: 0});
 });
-
 
 //Seteo de prefijo
 bot.on('message', message => {
@@ -22,11 +32,32 @@ bot.on('message', message => {
     if (sender.id === botID) {
         return;
     }
+    if (msg.startsWith(prefix)) {
 
-    //Comando de prueba
+        //Comando de prueba
     if (msg === prefix + 'ping') {
 
         message.channel.send('Pong!')   
+    }
+    
+    if (msg === prefix + 'info') {
+
+        message.channel.send(userInfo(sender));   
+    }
+
+    //Contador de mensajes
+    if (!userData[sender.id]) userData[sender.id] = {
+        messageSent:0
+    }
+
+    userData[sender.id].messageSent++;
+    //escribe en el json
+    fs.writeFile('storage/userData.json', JSON.stringify(userData), (err) => {
+        if (err) console.error(err);
+    })
+
+    if (msg === prefix + 'msgenv') {
+        message.channel.send('Hola, como estas? Ví que me escribiste para saber el inutil dato de cuántos mensajes mandaste; btw mandaste: **' + userData[sender.id].messageSent + '**.')
     }
 
     //Comando que borra mensajes
@@ -38,7 +69,7 @@ bot.on('message', message => {
         }
         
     }
-    
+
     if (msg.includes('verduras')) {
         message.delete()
         message.author.send('Me das asco, ojala te atragantes!')
@@ -52,11 +83,32 @@ bot.on('message', message => {
                 msg.delete({ timeout: 5000 /*time unitl delete in milliseconds*/});
             })
     }
-   
+    
+
+        
+    }
+    
 } );
 
-bot.on('guildMemberAdd', member => {
-    console.log('User ' + member.username + ' has joined the server!') 
-})
 
-bot.login('ODQ3MDk0ODc3NzE1MzAwNDIy.YK5ElQ.p7gwRJfqs9aEnLg0l8ETNW2f7TM')
+//Adicion de autorol cuando usuario entra al servidor
+bot.on('guildMemberAdd', guildMember =>{
+    var autoRol = guildMember.guild.roles.cache.find(role => role.name === 'AutoRol');
+    guildMember.roles.add(autoRol);
+});
+
+bot.on('guildMemberAdd', newMember => {
+    //var username = newMember.user.username;
+    var usernameID = `${newMember}`;
+    const welcomeChannel = newMember.guild.channels.cache.find(channel => channel.name === 'canaldeprueba')
+    welcomeChannel.send('Bienvenido '+ usernameID + ' te invito a pasarla mal!');
+});
+
+bot.on('guildMemberRemove', newMember => {
+    //var username = newMember.user.username;
+    var usernameID = `${newMember}`;
+    const welcomeChannel = newMember.guild.channels.cache.find(channel => channel.name === 'canaldeprueba')
+    welcomeChannel.send(usernameID + ' no se bancó la gira.');
+});
+
+bot.login('ODQ3MDk0ODc3NzE1MzAwNDIy.YK5ElQ.N8HSYfqVF5Cp0bnJIjM_te2nOz0')
