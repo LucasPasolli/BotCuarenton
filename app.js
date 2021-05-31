@@ -121,3 +121,5 @@ bot.on('guildMemberRemove', newMember => {
 });
 
 bot.login('')
+
+//probando git?
