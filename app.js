@@ -15,7 +15,7 @@ bot.commands = new Discord.Collection();
 //Avisa cuando prende el bot
 bot.on('ready', () => {
     console.log('Corriendo en servidor')
-    bot.user.setActivity("43 Lover", {type: 0});
+    bot.user.setActivity("Around the World", {type: 2});
 });
 
 function loadCommands(){
@@ -80,7 +80,7 @@ bot.on('message', message => {
         else{
             setTimeout(() => message.delete(), 5000)
             message.channel.send("Commands reloaded...").then(msg => {
-                msg.delete({ timeout: 50000});
+                msg.delete({ timeout: 5000});
             loadCommands();
             })
         }
@@ -120,4 +120,4 @@ bot.on('guildMemberRemove', newMember => {
     welcomeChannel.send(usernameID + ' no se bancó la gira.');
 });
 
-bot.login('')
+bot.login('ODQ3MDk0ODc3NzE1MzAwNDIy.YK5ElQ.osxSXP36gSXb8FeDFhntmpSTthE')
