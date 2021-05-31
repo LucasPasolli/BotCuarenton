@@ -120,4 +120,4 @@ bot.on('guildMemberRemove', newMember => {
     welcomeChannel.send(usernameID + ' no se bancó la gira.');
 });
 
-bot.login('ODQ3MDk0ODc3NzE1MzAwNDIy.YK5ElQ.osxSXP36gSXb8FeDFhntmpSTthE')
+bot.login('')
