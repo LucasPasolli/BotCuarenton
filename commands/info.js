@@ -13,10 +13,15 @@ module.exports.run = (bot, message, args) => {
         return finalString;
     }
     var sender = message.author;
-    setTimeout(() => message.delete(), 5000)
-    message.channel.send(userInfo(sender)).then(msg => {
+    if (message.channel.type === 'dm') {
+        message.channel.send(userInfo(sender));
+    }
+    else{
+        setTimeout(() => message.delete(), 5000)
+        message.channel.send(userInfo(sender)).then(msg => {
         msg.delete({ timeout: 50000});
-    });  
+    }); 
+    }   
 }
 
 module.exports.config = {

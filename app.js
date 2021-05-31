@@ -9,25 +9,8 @@ const bot = new Discord.Client();
 const botID = '847094877715300422';
 const fs = require('fs');
 const userData = JSON.parse(fs.readFileSync('storage/userData.json', 'utf8'));
-const commandsList = fs.readFileSync('storage/botCommands.txt', 'utf8');
+//const commandsList = fs.readFileSync('storage/botCommands.txt', 'utf8');
 bot.commands = new Discord.Collection();
-
-fs.readdir('./commands/', (err, files) => {
-    if(err) console.error(err);
-    let jsfiles = files.filter(f => f.split('.').pop() === 'js');
-    if (jsfiles.length <= 0) {
-        return console.log('No commands found...')
-    }
-    else{
-        console.log(jsfiles.length + ' comandos encontrados. ')//Dice cuantos comandos hay
-    }
-
-    jsfiles.forEach((f, i)=>{//hace un loop
-        let cmds = require(`./commands/${f}`);//Toma todas las js files de la carpeta
-        console.log(`Comando ${f} encontrado.`)//Dice por terminal que comando esta corriendo
-        bot.commands.set(cmds.config.command, cmds);//Toma el nombre del comando
-    })
-})
 
 //Avisa cuando prende el bot
 bot.on('ready', () => {
@@ -35,12 +18,34 @@ bot.on('ready', () => {
     bot.user.setActivity("43 Lover", {type: 0});
 });
 
+function loadCommands(){
+    fs.readdir('./commands/', (err, files) => {
+        if(err) console.error(err);
+        let jsfiles = files.filter(f => f.split('.').pop() === 'js');
+        if (jsfiles.length <= 0) {
+            return console.log('No commands found...')
+        }
+        else{
+            console.log(jsfiles.length + ' comandos encontrados. ')//Dice cuantos comandos hay
+        }
+
+        jsfiles.forEach((f, i)=>{//hace un loop
+            delete require.cache[require.resolve(`./commands/${f}`)];//borra el cache para poder cargar otro comando
+            let cmds = require(`./commands/${f}`);//Toma todas las js files de la carpeta
+            console.log(`Comando ${f} encontrado.`)//Dice por terminal que comando esta corriendo
+            bot.commands.set(cmds.config.command, cmds);//Toma el nombre del comando
+        })
+    })
+}
+
+loadCommands();
+
 //Seteo de prefijo
 bot.on('message', message => {
 
     var sender = message.author;
     var msg = message.content.toLowerCase();
-    var prefix = '¿'
+    const prefix = '¿'
     const cont = message.content.slice(prefix.length).split(" ");//separa el mensaje en un array
     const args = cont.slice(1);//toma lo que esta despues del prefijo
     const cmd = bot.commands.get(cont[0]);//toma el comando escrito en el chat
@@ -66,7 +71,21 @@ bot.on('message', message => {
         fs.writeFile('storage/userData.json', JSON.stringify(userData), (err) => {
             if (err) console.error(err);
         })
-
+    
+    if (msg === prefix + 'reload') {
+        if (message.channel.type === 'dm') {
+            message.channel.send("Commands reloaded...")
+            loadCommands();
+        }
+        else{
+            setTimeout(() => message.delete(), 5000)
+            message.channel.send("Commands reloaded...").then(msg => {
+                msg.delete({ timeout: 50000});
+            loadCommands();
+            })
+        }
+    }
+    
     //Comando que borra mensajes
     if (message.channel.id === '847598285962477658') {
         if ("no me gusta el 43" === (msg)) {
@@ -101,4 +120,4 @@ bot.on('guildMemberRemove', newMember => {
     welcomeChannel.send(usernameID + ' no se bancó la gira.');
 });
 
-bot.login('ODQ3MDk0ODc3NzE1MzAwNDIy.YK5ElQ.dFzcgf7lYyBi46AZOwClBX5C-9E')
+bot.login('')
