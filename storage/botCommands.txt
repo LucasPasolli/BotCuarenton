@@ -2,3 +2,5 @@ __**Comandos:**__
 -**torta**: Te mando la receta de la "torta cuarentona".
 -**msgenv**: Contador de mensajes enviados.
 -**info**: Información de tu usuario.
+-**play**: Reproduce audio/música.
+-**disconnect**: Retira al bot del canal.
