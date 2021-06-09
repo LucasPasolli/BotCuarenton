@@ -80,9 +80,9 @@ bot.on("message", async (message) => {
       resume(serverQueue);
       break;
     case "loop":
-      loop(serverQueue);
-    case "shuffle":
-      shuffle(serverQueue);
+      loop(argsM, serverQueue);
+    case "queue":
+      queueCmd(serverQueue);
   }
 
   async function execute(message, serverQueue) {
@@ -135,7 +135,15 @@ bot.on("message", async (message) => {
     const dispatcher = serverQueue.connection
       .play(ytdl(song.url))
       .on("finish", () => {
-        serverQueue.songs.shift();
+        if (serverQueue.loopone) {
+          play(guild, serverQueue.songs[0]);
+        } else if (serverQueue.loopall) {
+          serverQueue.songs.push(serverQueue.songs[0]); //pone la cancion en posicion 0 al final del array
+          serverQueue.songs.shift(); //borra la cancion en posicion 0 y mueve todas las canciones una posicion atras
+        } else {
+          serverQueue.songs.shift();
+        }
+        // serverQueue.songs.shift();
         play(guild, serverQueue.songs[0]);
       });
     serverQueue.txtChannel.send(
@@ -197,6 +205,70 @@ bot.on("message", async (message) => {
       serverQueue.connection.dispatcher.resume();
       message.channel.send("Reproduciendose...");
     }
+  }
+
+  function loop(argsM, serverQueue) {
+    if (!serverQueue.connection) {
+      return message.channel.send(
+        "No se esta reproduciendo nada en estos momentos..."
+      );
+    }
+    if (!message.member.voice.channel) {
+      return message.channel.send("Tenes que estar conectado a un canal!");
+    }
+    switch (argsM[0].toLowerCase()) {
+      case "all":
+        serverQueue.loopall = !serverQueue.loopall;
+        serverQueue.loopone = false;
+
+        if (serverQueue.loopall === true) {
+          message.channel.send("Se activó el Loop en toda la cola. ");
+        } else {
+          message.channel.send("Se desactivó el Loop en toda la cola. ");
+        }
+        break;
+
+      case "one":
+        serverQueue.loopone = !serverQueue.loopone;
+        serverQueue.loopall = false;
+
+        if (serverQueue.loopall === true) {
+          message.channel.send("Se activó el Loop en una sola canción. ");
+        } else {
+          message.channel.send("Se desactivó el Loop en una sola canción. ");
+        }
+        break;
+
+      case "off":
+        serverQueue.loopall = false;
+        serverQueue.loopone = false;
+        message.channel.send("Se desactivó la función Loop. ");
+        break;
+
+      default:
+        message.channel.send(
+          "Ingrese que opción de loop quiere: loop all/one/off. "
+        );
+    }
+  }
+  function queueCmd(serverQueue) {
+    if (!serverQueue.connection) {
+      return message.channel.send(
+        "No se esta reproduciendo nada en estos momentos..."
+      );
+    }
+    if (!message.member.voice.channel) {
+      return message.channel.send("Tenes que estar conectado a un canal!");
+    }
+
+    let nowPlaying = serverQueue.songs[0];
+    let qMsg = `Se está reproduciendo: ${nowPlaying.title}\n------------------------------\n`;
+
+    for (var i = 1; i < serverQueue.songs.length; i++) {
+      qMsg += `${i}. ${serverQueue.songs[i].title}\n`;
+    }
+
+    message.channel.send("```" + qMsg + "```");
   }
 
   if (!message.content.startsWith(prefix)) {
